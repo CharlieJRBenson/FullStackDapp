@@ -1,31 +1,33 @@
 import "./App.css";
 import { useState } from "react";
 import { ethers } from "ethers";
-import Greeter from "./artifacts/contracts/Greeter.sol/Greeter.json";
+import Motivation from "./artifacts/contracts/Motivation.sol/Motivation.json";
 
-const greeterAddress = "0x5c3412DC194B7467A2BECcDD41d21ab9665791F8";
+const motivationAddress = "0xFEc6CDeF9227370e4eF48D101774015977c5af75";
 
 function App() {
-  //store greeting locally
-  const [greeting, setGreetingValue] = useState();
+  //store motivation locally
+  const [motivation, addMotivationValue] = useState();
 
   //request metamask access
   async function requestAccount() {
     await window.ethereum.request({ method: "eth_requestAccounts" });
   }
 
-  //call contract and read greeting val
-  async function fetchGreeting() {
+  //call contract and read motivation val
+  async function fetchMotivation() {
     if (typeof window.ethereum !== "undefined") {
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const contract = new ethers.Contract(
-        greeterAddress,
-        Greeter.abi,
+        motivationAddress,
+        Motivation.abi,
         provider
       );
       try {
-        //call contract greet func and store returned val
-        const data = await contract.greet();
+        let rand = getRandom();
+
+        //call contract motivate func and store returned val
+        const data = await contract.motivate(rand);
         console.log("data : ", data);
       } catch (error) {
         console.log("error : ", error);
@@ -33,28 +35,53 @@ function App() {
     }
   }
 
-  //call contract to set greeting
-  async function setGreeting() {
-    if (!greeting) return;
+  //call contract to set motivation
+  async function addMotivation() {
+    if (!motivation) return;
     if (typeof window.ethereum !== "undefined") {
       await requestAccount();
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const signer = provider.getSigner();
-      const contract = new ethers.Contract(greeterAddress, Greeter.abi, signer);
-      const transaction = await contract.setGreeting(greeting);
+      const contract = new ethers.Contract(
+        motivationAddress,
+        Motivation.abi,
+        signer
+      );
+      const transaction = await contract.addMotivation(motivation);
       await transaction.wait();
-      fetchGreeting();
+      fetchMotivation();
+    }
+  }
+
+  async function getRandom() {
+    if (typeof window.ethereum !== "undefined") {
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const contract = new ethers.Contract(
+        motivationAddress,
+        Motivation.abi,
+        provider
+      );
+      try {
+        //call contract motivate func and store returned val
+        const size = await contract.size();
+        console.log("size : ", size);
+
+        //returns random index in motivations array
+        return Math.floor(Math.random() * size);
+      } catch (error) {
+        console.log("error : ", error);
+      }
     }
   }
 
   return (
     <div className="App">
       <header className="App-header">
-        <button onClick={fetchGreeting}>Fetch Greeting</button>
-        <button onClick={setGreeting}>Set Greeting</button>
+        <button onClick={fetchMotivation}>Random Motivation</button>
+        <button onClick={addMotivation}>Add Motivation</button>
         <input
-          onChange={(e) => setGreetingValue(e.target.value)}
-          placeholder="Set greeting"
+          onChange={(e) => addMotivationValue(e.target.value)}
+          placeholder="Set motivation"
         ></input>
       </header>
     </div>
