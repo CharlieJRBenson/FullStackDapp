@@ -7,7 +7,7 @@ const motivationAddress = "0xFEc6CDeF9227370e4eF48D101774015977c5af75";
 
 function App() {
   //store motivation locally
-  const [motivation, addMotivationValue] = useState();
+  const [motivation, setMotivation] = useState();
 
   //request metamask access
   async function requestAccount() {
@@ -29,6 +29,7 @@ function App() {
         //call contract motivate func and store returned val
         const data = await contract.motivate(rand);
         console.log("data : ", data);
+        setMotivation(data);
       } catch (error) {
         console.log("error : ", error);
       }
@@ -77,11 +78,15 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
+        <h1>{motivation}</h1>
+        <h4>Add Your Motivational Quote to The Blockchain!</h4>
+        <h5>Get a Random Motivation:</h5>
         <button onClick={fetchMotivation}>Random Motivation</button>
+        <p>Add a Motivational Quote:</p>
         <button onClick={addMotivation}>Add Motivation</button>
         <input
-          onChange={(e) => addMotivationValue(e.target.value)}
-          placeholder="Set motivation"
+          onChange={(e) => setMotivation(e.target.value)}
+          placeholder="your motivation here"
         ></input>
       </header>
     </div>
